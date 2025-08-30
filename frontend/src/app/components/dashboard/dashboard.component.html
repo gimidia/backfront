@@ -1,0 +1,243 @@
+<div class="min-h-screen bg-gray-100">
+  <!-- Navigation Header -->
+  <nav class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-gray-900">Sistema de Tarefas</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-700" *ngIf="currentUser">
+            Bem-vindo, {{ currentUser.username }}!
+          </span>
+          <button
+            (click)="logout()"
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Header with Actions -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Minhas Tarefas</h2>
+        <button
+          (click)="showCreateForm()"
+          class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Nova Tarefa
+        </button>
+      </div>
+
+      <!-- Alerts -->
+      <div *ngIf="error" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+        {{ error }}
+      </div>
+      <div *ngIf="success" class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative">
+        {{ success }}
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="searchFilter" class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+            <input
+              id="searchFilter"
+              type="text"
+              [(ngModel)]="searchFilter"
+              (input)="onSearchFilterChange()"
+              placeholder="Buscar por título ou descrição..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              id="statusFilter"
+              [(ngModel)]="statusFilter"
+              (change)="onStatusFilterChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Todos os status</option>
+              <option *ngFor="let status of taskStatuses" [value]="status">
+                {{ taskStatusDisplay[status] }}
+              </option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button
+              (click)="clearFilters()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Form Modal -->
+      <div *ngIf="showTaskForm" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+          <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+              {{ editingTask ? 'Editar Tarefa' : 'Nova Tarefa' }}
+            </h3>
+            
+            <form [formGroup]="taskForm" (ngSubmit)="onSubmitTask()">
+              <div class="mb-4">
+                <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                <input
+                  id="titulo"
+                  type="text"
+                  formControlName="titulo"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="titulo?.invalid && titulo?.touched"
+                />
+                <div *ngIf="titulo?.invalid && titulo?.touched" class="mt-1 text-sm text-red-600">
+                  <div *ngIf="titulo?.errors?.['required']">Título é obrigatório</div>
+                  <div *ngIf="titulo?.errors?.['maxlength']">Título deve ter no máximo 100 caracteres</div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="descricao" class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                <textarea
+                  id="descricao"
+                  formControlName="descricao"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="descricao?.invalid && descricao?.touched"
+                ></textarea>
+                <div *ngIf="descricao?.invalid && descricao?.touched" class="mt-1 text-sm text-red-600">
+                  <div *ngIf="descricao?.errors?.['maxlength']">Descrição deve ter no máximo 500 caracteres</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label for="dataVencimento" class="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento</label>
+                  <input
+                    id="dataVencimento"
+                    type="date"
+                    formControlName="dataVencimento"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    [class.border-red-500]="dataVencimento?.invalid && dataVencimento?.touched"
+                  />
+                  <div *ngIf="dataVencimento?.invalid && dataVencimento?.touched" class="mt-1 text-sm text-red-600">
+                    <div *ngIf="dataVencimento?.errors?.['required']">Data de vencimento é obrigatória</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    id="status"
+                    formControlName="status"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option *ngFor="let status of taskStatuses" [value]="status">
+                      {{ taskStatusDisplay[status] }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                <button
+                  type="button"
+                  (click)="hideTaskForm()"
+                  class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="taskForm.invalid || loading"
+                  class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ loading ? 'Salvando...' : (editingTask ? 'Atualizar' : 'Criar') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks Grid -->
+      <div *ngIf="loading && !showTaskForm" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="mt-2 text-gray-600">Carregando tarefas...</p>
+      </div>
+
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let task of filteredTasks" class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="text-lg font-medium text-gray-900 line-clamp-2">{{ task.titulo }}</h3>
+            <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(task.status)">
+              {{ taskStatusDisplay[task.status] }}
+            </span>
+          </div>
+          
+          <p *ngIf="task.descricao" class="text-gray-600 text-sm mb-4 line-clamp-3">{{ task.descricao }}</p>
+          
+          <div class="text-sm text-gray-500 mb-4">
+            <p><span class="font-medium">Criado:</span> {{ formatDate(task.dataCriacao) }}</p>
+            <p><span class="font-medium">Vencimento:</span> {{ formatDate(task.dataVencimento) }}</p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              (click)="showEditForm(task)"
+              class="flex-1 min-w-0 px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-sm font-medium"
+            >
+              Editar
+            </button>
+            <button
+              *ngIf="task.status !== 'CONCLUIDA'"
+              (click)="completeTask(task)"
+              class="flex-1 min-w-0 px-3 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded text-sm font-medium"
+            >
+              Concluir
+            </button>
+            <button
+              (click)="deleteTask(task)"
+              class="flex-1 min-w-0 px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-sm font-medium"
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && filteredTasks.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma tarefa encontrada</h3>
+        <p class="mt-1 text-sm text-gray-500">Comece criando uma nova tarefa.</p>
+        <div class="mt-6">
+          <button
+            (click)="showCreateForm()"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nova Tarefa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
