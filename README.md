@@ -55,13 +55,68 @@ Este é um sistema completo de gerenciamento de tarefas que permite aos usuário
 
 ## 🚀 Começando
 
-### Pré-requisitos
+### 📋 Pré-requisitos
 - ☕ **Java 17+**
 - 🔧 **Maven 3.6+**
 - 🟢 **Node.js 16+**
 - 📦 **npm 8+**
+- 🌐 **Git**
 
-### 🍃 Configuração do Backend
+### 📥 Clonagem e Configuração Local
+
+#### **1. Clone o Repositório:**
+```bash
+git clone https://github.com/gimidia/backfront.git
+cd backfront
+```
+
+#### **2. Configuração e Execução do Backend:**
+```bash
+# Navegar para o diretório do backend
+cd backend
+
+# Instalar dependências e compilar
+mvn clean install
+
+# Executar o servidor Spring Boot
+mvn spring-boot:run
+```
+
+**✅ Backend rodando em:** http://localhost:8080
+- 📚 **Swagger UI:** http://localhost:8080/swagger-ui.html
+- 🗄️ **H2 Console:** http://localhost:8080/h2-console
+
+#### **3. Configuração e Execução do Frontend (novo terminal):**
+```bash
+# Navegar para o diretório do frontend
+cd frontend
+
+# Instalar dependências npm
+npm install
+
+# Executar o servidor de desenvolvimento Angular
+ng serve
+```
+
+**✅ Frontend rodando em:** http://localhost:4200
+
+> 💡 **Importante:** Mantenha ambos os terminais abertos. O backend (porta 8080) deve estar rodando antes de usar o frontend (porta 4200).
+
+### ⚡ Execução Rápida
+
+Para executar ambos os serviços rapidamente:
+
+```bash
+# Terminal 1 - Backend
+cd backend && mvn spring-boot:run
+
+# Terminal 2 - Frontend  
+cd frontend && npm install && ng serve
+```
+
+### 🔧 Configuração Manual Detalhada
+
+### 🍃 Configuração Manual do Backend
 
 1. **Navegue para o diretório do backend:**
    ```bash
@@ -79,7 +134,7 @@ Este é um sistema completo de gerenciamento de tarefas que permite aos usuário
    - Swagger UI: http://localhost:8080/swagger-ui.html
    - Console H2: http://localhost:8080/h2-console
 
-### 🅰️ Configuração do Frontend
+### 🅰️ Configuração Manual do Frontend
 
 1. **Navegue para o diretório do frontend:**
    ```bash
@@ -399,7 +454,27 @@ springdoc.swagger-ui.path=/swagger-ui.html
 
 ## 🐛 Solução de Problemas
 
-### Problemas Comuns
+### 🚀 Problemas de Primeira Execução
+
+**💻 Após clonar o repositório:**
+
+1. **Erro "Java not found":**
+   - Verifique se o Java 17+ está instalado: `java -version`
+   - Configure a variável JAVA_HOME se necessário
+
+2. **Erro "Maven not found":**
+   - Instale Maven ou use o wrapper: `./mvnw` (Linux/Mac) ou `.\mvnw` (Windows)
+
+3. **Erro "Node.js not found":**
+   - Instale Node.js 16+ de: https://nodejs.org
+   - Verifique: `node -v` e `npm -v`
+
+4. **Erro "ng not found":**
+   ```bash
+   npm install -g @angular/cli
+   ```
+
+### 🛠️ Problemas Comuns
 
 1. **Backend não está iniciando:**
    - Verifique a versão do Java (17+)
